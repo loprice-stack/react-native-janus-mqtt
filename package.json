@@ -185,5 +185,8 @@
       "vite"
     ],
     "version": "0.63.1"
+  },
+  "dependencies": {
+    "paho-mqtt": "^1.1.0"
   }
 }
