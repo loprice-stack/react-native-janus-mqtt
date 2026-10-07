@@ -1,2 +1,3 @@
-import Mqtt from './mqtt';
-export { Mqtt };
+import Mqtt from './transport-mqtt';
+import Connection from './connection';
+export { Mqtt, Connection };

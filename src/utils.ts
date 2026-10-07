@@ -48,22 +48,6 @@ export const getNumericID = ((_) => {
  * @property {function} currElem - Get the current element without advancing
  */
 
-/**
- * Generate a circular iterator from an array.
- *
- * @param {Array} list - The array that must be iterated
- * @returns {CircularIterator} The generated iterator
- */
-export const newIterator = (list: any) => {
-  const l = Array.from(list);
-  const len = l.length;
-  var i = 0;
-
-  /** @type {CircularIterator} */
-  const iterator = {
-    nextElem: () => l[i++ % len],
-    currElem: () => l[i % len],
-  };
-
-  return iterator;
+export const Logger = (message: any) => {
+  console.log(message);
 };

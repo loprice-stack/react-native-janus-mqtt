@@ -1,20 +1,21 @@
 import Paho from 'paho-mqtt';
 import { randomString } from './utils';
-type MqttOptions = {
+export type MqttOptions = {
   serverUrl: string;
   port: number;
   clientId: string | undefined;
   userName: string;
   password: string;
-  tojanus: string | undefined;
-  fromjanus: string | undefined;
+  tojanus: string;
+  fromjanus: string;
   useSSL: boolean;
-  keepAliveInterval: number | undefined;
+  keepAliveInterval: number;
+  reconnect: boolean;
   willMessageOptions: willOptions;
   onSuccess: any;
 };
 
-type willOptions = {
+export type willOptions = {
   topic: string;
   qos: 0 | 1 | 2;
   retain: boolean;
@@ -33,6 +34,7 @@ class Mqtt {
     fromjanus: 'fromjanus',
     useSSL: true,
     keepAliveInterval: 60,
+    reconnect: true,
     willMessageOptions: { topic: '', qos: 0, retain: false, message: '' },
     onSuccess: undefined,
   };
@@ -47,6 +49,7 @@ class Mqtt {
     fromjanus = 'fromjanus',
     useSSL = true,
     keepAliveInterval = 60,
+    reconnect,
     willMessageOptions,
     onSuccess,
   }: MqttOptions) {
@@ -59,10 +62,10 @@ class Mqtt {
     this.options.fromjanus = fromjanus;
     this.options.useSSL = useSSL;
     this.options.keepAliveInterval = keepAliveInterval;
+    this.options.reconnect = reconnect;
     this.options.willMessageOptions = willMessageOptions;
     this.options.onSuccess = onSuccess;
     this.client = new Paho.Client(serverUrl, Number(port), clientId);
-    console.log('--------------------Library---------------------');
   }
 
   connect() {
@@ -80,10 +83,6 @@ class Mqtt {
     this.client.disconnect();
   }
 
-  getPahoClient() {
-    return this.client;
-  }
-
   private message() {
     var lastWillMessage = new Paho.Message(
       this.options.willMessageOptions.message
@@ -94,20 +93,14 @@ class Mqtt {
     return lastWillMessage;
   }
 
+  // called when the client succeed connecting
+  onSuccess(onSuccess: any) {
+    this.client.onConnectionLost = onSuccess;
+  }
+
   // called when the client loses its connection
   onConnectionLost(onConnectionLost: any) {
     this.client.onConnectionLost = onConnectionLost;
-  }
-
-  // called when the client succeed connecting
-  onSuccess(onConnectionLost: any) {
-    this.client.onConnectionLost = onConnectionLost;
-    console.log(
-      'Mqtt server connected ' +
-        this.client.host +
-        ' to ' +
-        this.client.clientId
-    );
   }
 
   // called when the message arrive
@@ -136,11 +129,6 @@ class Mqtt {
 
   subscribe(topic: string) {
     this.client.subscribe(topic);
-  }
-
-  send(payload: any) {
-    //@ts-ignore
-    this.publish(this.options.tojanus, payload);
   }
 }
 

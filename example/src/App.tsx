@@ -1,9 +1,9 @@
 import { Text, View, StyleSheet, Button } from 'react-native';
-import { Mqtt } from 'react-native-janus-mqtt';
+import { Connection } from 'react-native-janus-mqtt';
 
-let client: any = null;
+let connection: any = null;
 function getClient() {
-  client = new Mqtt({
+  connection = new Connection({
     serverUrl: 'loprice.co.tz',
     port: 5281,
     clientId: undefined,
@@ -12,46 +12,24 @@ function getClient() {
     tojanus: 'tojanus',
     fromjanus: 'fromjanus',
     useSSL: true,
-    keepAliveInterval: 60,
+    keepAliveInterval: 0,
+    reconnect: true,
     willMessageOptions: {
       topic: 'topic',
       qos: 0,
       retain: false,
       message: 'will',
     },
-    onSuccess: onSuccess,
+    onSuccess: () => {
+      connection.setJanusMessageListerner(connection.options.tojanus);
+      console.log('Success from connection class');
+    },
   });
-
-  client.onConnectionLost(onConnectionLost);
-  client.onMessageArrived(onMessageArrived);
-
-  client.connect();
 }
 
-function onSuccess() {
-  console.log('--------------------connected---------------------');
-}
-
-function send() {
-  client.publish('/loprice/test', 'test');
-}
-
-function subscribe() {
-  client.subscribe('/loprice/test');
-}
-
-// called when the client loses its connection
-function onConnectionLost(responseObject: any) {
-  if (responseObject.errorCode !== 0) {
-    console.log('onSignupsConnectionLost:' + responseObject.errorMessage);
-  }
-}
-
-// called when the client loses its connection
-function onMessageArrived(message: any) {
-  //if (responseObject.errorCode !== 0) {
-  console.log(message.payloadString);
-  //}
+// publish to topic
+function publish() {
+  connection.send('test');
 }
 
 export default function App() {
@@ -59,8 +37,7 @@ export default function App() {
     <View style={styles.container}>
       <Text style={{ margin: 4 }}>Mqtt function test</Text>
       <Button title="Start mqtt" onPress={() => getClient()} />
-      <Button title="Subscribe" onPress={() => subscribe()} />
-      <Button title="Publish" onPress={() => send()} />
+      <Button title="Publish" onPress={() => publish()} />
     </View>
   );
 }
