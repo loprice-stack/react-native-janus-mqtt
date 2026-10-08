@@ -1,12 +1,12 @@
 import { getNumericID, Logger } from './utils';
-const LOG_NS = '[tmanager.js]';
+const LOG_NS = '[transaction-manager.ts]';
 
 export type PendingTransaction = {
   id: string;
   owner: Owner;
   request: string;
-  done: (data: any) => void;
-  error: (er: any) => void;
+  done: Function;
+  error: Function;
   timeout: number;
 };
 
@@ -21,9 +21,9 @@ class TransactionManager {
   /**
    * Create a Transacton Manager (TM)
    */
-  constructor(id = getNumericID()) {
+  constructor() {
     this.transactions = new Map();
-    this.id = id;
+    this.id = getNumericID();
     Logger(`${LOG_NS} [${this.id}] creating new transaction manager`);
     //this._dbgtask = null;
     /* If tx debugging is enabled, periodically print the size of the tx table */
@@ -100,13 +100,13 @@ class TransactionManager {
     timeout = 0,
   }: PendingTransaction) {
     if (this.has(id)) return;
-    const tx = {
-      id,
-      owner,
-      request,
-      done,
-      error,
-      timeout,
+    let tx = {
+      id: id,
+      owner: owner,
+      request: request,
+      done: done,
+      error: error,
+      timeout: timeout,
     };
     if (timeout > 0) {
       const timeout_ms: any = setTimeout(() => {
@@ -120,6 +120,13 @@ class TransactionManager {
     }
 
     this.set(id, tx);
+
+    console.log(owner);
+    console.log(this.transactions);
+    console.log(
+      '-------------------------------transactions--------------------------------------------'
+    );
+
     Logger(
       `${LOG_NS} [${tx.owner.id}] created new transaction ${id}, request "${tx.request}"`
     );

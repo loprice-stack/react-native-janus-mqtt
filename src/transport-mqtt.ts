@@ -1,5 +1,7 @@
 import Paho from 'paho-mqtt';
-import { randomString } from './utils';
+import { getNumericID, Logger, randomString } from './utils';
+const LOG_NS = '[transport-mqtt.ts]';
+
 export type MqttOptions = {
   serverUrl: string;
   port: number;
@@ -23,15 +25,16 @@ export type willOptions = {
 };
 
 class Mqtt {
-  private client: any;
+  private mqttclient: any;
+  id: string;
   private options: MqttOptions = {
     serverUrl: '',
     port: 0,
     clientId: '',
     userName: '',
     password: '',
-    tojanus: 'tojanus',
-    fromjanus: 'fromjanus',
+    tojanus: 'to-janus',
+    fromjanus: 'from-janus',
     useSSL: true,
     keepAliveInterval: 60,
     reconnect: true,
@@ -65,11 +68,13 @@ class Mqtt {
     this.options.reconnect = reconnect;
     this.options.willMessageOptions = willMessageOptions;
     this.options.onSuccess = onSuccess;
-    this.client = new Paho.Client(serverUrl, Number(port), clientId);
+    this.mqttclient = new Paho.Client(serverUrl, Number(port), clientId);
+    this.id = getNumericID();
+    Logger(`${LOG_NS} [${this.id}] creating new mqtt transport connection`);
   }
 
   connect() {
-    this.client.connect({
+    this.mqttclient.connect({
       userName: this.options.userName,
       password: this.options.password,
       useSSL: this.options.useSSL,
@@ -80,7 +85,7 @@ class Mqtt {
   }
 
   disconnect() {
-    this.client.disconnect();
+    this.mqttclient.disconnect();
   }
 
   private message() {
@@ -93,30 +98,34 @@ class Mqtt {
     return lastWillMessage;
   }
 
-  // called when the client succeed connecting
+  // called when the mqttclient succeed connecting
   onSuccess(onSuccess: any) {
-    this.client.onConnectionLost = onSuccess;
+    this.mqttclient.onConnectionLost = onSuccess;
   }
 
-  // called when the client loses its connection
+  // called when the mqttclient loses its connection
   onConnectionLost(onConnectionLost: any) {
-    this.client.onConnectionLost = onConnectionLost;
+    this.mqttclient.onConnectionLost = onConnectionLost;
   }
 
   // called when the message arrive
   onMessageArrived(onMessageArrived: any) {
-    this.client.onMessageArrived = onMessageArrived;
+    this.mqttclient.onMessageArrived = onMessageArrived;
   }
 
   // called when the message arrive
   onMessageDelivered(onMessageDelivered: any) {
-    this.client.onMessageDelivered = onMessageDelivered;
+    this.mqttclient.onMessageDelivered = onMessageDelivered;
   }
 
   publish(topic: string, payload: any) {
     const message = new Paho.Message(JSON.stringify(payload));
     message.destinationName = topic;
-    this.client.send(message);
+    this.mqttclient.send(message);
+  }
+
+  send(request: any) {
+    this.publish(this.options.tojanus, request);
   }
 
   publish2(topic: string, payload: any, qos: 0 | 1 | 2, retain: boolean) {
@@ -124,11 +133,11 @@ class Mqtt {
     message.destinationName = topic;
     message.qos = qos;
     message.retained = retain;
-    this.client.send(message);
+    this.mqttclient.send(message);
   }
 
   subscribe(topic: string) {
-    this.client.subscribe(topic);
+    this.mqttclient.subscribe(topic);
   }
 }
 

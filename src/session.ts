@@ -1,4 +1,4 @@
-import { EventEmitter } from 'node:events';
+import { EventEmitter } from 'events';
 import {
   isErrorData,
   isResponseData,
@@ -7,7 +7,7 @@ import {
   JANUSMQTT,
 } from './protocol';
 import { getNumericID, Logger } from './utils';
-const LOG_NS = '[session.js]';
+const LOG_NS = '[session.ts]';
 
 /**
  * Class representing a Janode session.<br>

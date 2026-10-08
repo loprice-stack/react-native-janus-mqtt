@@ -30,7 +30,7 @@ export const randomString = (len = 12) => {
  *
  * @returns {string} A numeric string
  */
-export const getNumericID = ((_) => {
+export const getNumericID = (() => {
   let now;
   let next = Math.floor(Number.MAX_SAFE_INTEGER * Math.random());
 
