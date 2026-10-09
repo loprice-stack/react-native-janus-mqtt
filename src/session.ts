@@ -7,10 +7,13 @@ import {
   JANUSMQTT,
 } from './protocol';
 import { getNumericID, Logger } from './utils';
+import type TransactionManager from './transaction-manager';
+import type Connection from './connection';
+import JanusMqttHandle from './handle';
 const LOG_NS = '[session.ts]';
 
 /**
- * Class representing a Janode session.<br>
+ * Class representing a JanusMqt session.<br>
  *
  * Session extends EventEmitter, so an instance can emit events and users can subscribe to them.<br>
  *
@@ -22,18 +25,18 @@ class Session extends EventEmitter {
    * Create a Janusmqtt session.
    */
 
-  _tm: any;
+  _tm: TransactionManager;
   _destroying: boolean;
   _destroyed: boolean;
-  _handles: Map<string, any>;
+  _handles: Map<number, JanusMqttHandle>;
   _ka_task: any;
-  connection: any;
+  connection: Connection;
   id: number;
   name: string;
   _closedListener: any;
   _errorListener: any;
 
-  constructor(connection: any, id: number, ka_interval = 30) {
+  constructor(connection: Connection, id: number, ka_interval = 30) {
     super();
 
     /**
@@ -59,13 +62,11 @@ class Session extends EventEmitter {
 
     /**
      * The task of the peridic keep-alive.
-     *
-     * @private
      */
     this._ka_task = null;
 
     /**
-     * The parent Janode connection.
+     * The parent JanusMqtt connection.
      */
     this.connection = connection;
 
@@ -197,7 +198,6 @@ class Session extends EventEmitter {
   /**
    * Helper method to disable the keep-alive task.
    *
-   * @private
    */
   _unsetKeepAlive() {
     if (!this._ka_task) return;
@@ -208,12 +208,8 @@ class Session extends EventEmitter {
 
   /**
    * Helper to check if a pending transaction is a keep-alive.
-   *
-   * @private
-   * @param {string} id - The transaction identifier
-   * @returns {boolean}
    */
-  _isKeepaliveTx(id: string) {
+  _isKeepaliveTx(id: number) {
     const tx = this._tm.get(id);
     if (tx) return tx.request === JANUS.REQUEST.KEEPALIVE;
     return false;
@@ -224,9 +220,6 @@ class Session extends EventEmitter {
    * Trickles transactions are closed here because the Janus API lacks the handle id in the ack.
    * If the message involves a owned transaction and the response is a definitive one,
    * the transaction will be closed.
-   *
-   * @private
-   * @param {Object} janus_message
    */
   _handleMessage(janus_message: any) {
     const { sender, janus, transaction } = janus_message;
@@ -234,7 +227,7 @@ class Session extends EventEmitter {
     /* First check if a handle is involved */
     if (sender) {
       /* Look for the handle in the map */
-      const handle = this._handles.get(sender);
+      const handle = this._handles.get(parseInt(sender));
       /* If the handle is missing notifies the user */
       if (!handle) {
         if (janus === JANUS.EVENT.DETACHED) {
@@ -320,10 +313,7 @@ class Session extends EventEmitter {
   }
 
   /**
-   * Decorate request with session id and transaction (if missing).
-   *
-   * @private
-   * @param {Object} request
+   * Decorate request with session id and transaction (if missing)
    */
   _decorateRequest(request: any) {
     request.transaction = request.transaction || getNumericID();
@@ -331,10 +321,7 @@ class Session extends EventEmitter {
   }
 
   /**
-   * Send a request from this session.
-   *
-   * @param {Object} request
-   * @returns {Promise<Object>} A promise resolving with the response
+   * Send a request from this session
    */
   async sendRequest(request: any) {
     /* Input check */
@@ -359,26 +346,27 @@ class Session extends EventEmitter {
     return new Promise((resolve, reject) => {
       /* Create a new transaction if the transaction does not exist */
       /* Use promise resolve and reject fn as callbacks for the transaction */
-      this._tm.createTransaction(
-        request.transaction,
-        this,
-        request.janus,
-        resolve,
-        reject
-      );
+      this._tm.createTransaction({
+        id: request.transaction,
+        owner: this,
+        request: request.janus,
+        done: resolve,
+        error: reject,
+        timeout: 0,
+      });
 
-      /* Send this message through the parent janode connection */
-      this.connection.sendRequest(request).catch((error: any) => {
+      try {
+        /* Send this message through the parent janusmqtt connection */
+        this.connection.sendRequest(request);
+      } catch (error: any) {
         /* In case of error quickly close the transaction */
         this._tm.closeTransactionWithError(request.transaction, this, error);
-      });
+      }
     });
   }
 
   /**
    * Gracefully destroy the session.
-   *
-   * @returns {Promise<void>}
    */
   async destroy() {
     Logger(`${LOG_NS} ${this.name} destroying session`);
@@ -416,20 +404,15 @@ class Session extends EventEmitter {
    * If the Handle param is missing, a new generic Handle will be attached.
    * Returns a promise with the pending attach operation.
    *
-   * @param {module:janode~PluginDescriptor} descriptor - The plugin descriptor
-   * @returns {Promise<module:handle~Handle>}
-   *
-   * @example
-   *
    * // attach an echotest plugin with its specifc class
-   * import EchoTestPlugin from 'janode/src/plugins/echotest-plugin.js';
-   * const echoHandle = await janodeSession.attach(EchoTestPlugin);
+   * import EchoTestPlugin from 'janusmqtt/src/plugins/echotest-plugin.js';
+   * const echoHandle = await Session.attach(EchoTestPlugin);
    *
    * // attach a plugin without using its custom implementation
    * const handle = await session.attach({ id: 'janus.plugin.echotest' });
    *
    */
-  async attach({ id, Handle }: any) {
+  async attach({ id, Handle = JanusMqttHandle }: any) {
     Logger(`${LOG_NS} ${this.name} attaching new handle`);
 
     if (!id) {
@@ -443,8 +426,7 @@ class Session extends EventEmitter {
     };
 
     try {
-      //@ts-ignore
-      const { data } = await this.sendRequest(request);
+      const { data }: any = await this.sendRequest(request);
       /* Increase the maximum number of listeners for this session */
       /* The handle will register one listener */
       this.setMaxListeners(this.getMaxListeners() + 1);

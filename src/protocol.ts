@@ -62,7 +62,7 @@ export const JANUS = {
  */
 export const JANUSMQTT = {
   /**
-   * Janode core events.
+   * JanusMqtt core events.
    */
   EVENT: {
     CONNECTION_CLOSED: 'connection_closed',
@@ -81,9 +81,6 @@ export const JANUSMQTT = {
 /**
  * Check if a message from Janus is a definitive response.
  *
- * @private
- * @param {Object} data - The data from Janus
- * @returns {boolean} True if the check succeeds
  */
 export const isResponseData = (data: any) => {
   if (typeof data === 'object' && data) {
@@ -95,9 +92,6 @@ export const isResponseData = (data: any) => {
 /**
  * Check if a message from Janus is an event.
  *
- * @private
- * @param {Object} data - The data from Janus
- * @returns {boolean} True if the check succeeds
  */
 export const isEventData = (data: any) => {
   if (typeof data === 'object' && data) {
@@ -109,9 +103,6 @@ export const isEventData = (data: any) => {
 /**
  * Check if a message from Janus is an error.
  *
- * @private
- * @param {Object} data - The data from Janus
- * @returns {boolean} True if the check succeeds
  */
 export const isErrorData = (data: any) => {
   if (typeof data === 'object' && data) {
@@ -123,9 +114,6 @@ export const isErrorData = (data: any) => {
 /**
  * Check if a message from Janus is a timeout notification.
  *
- * @private
- * @param {Object} data - The data from Janus
- * @returns {boolean} True if the check succeeds
  */
 export const isTimeoutData = (data: any) => {
   if (typeof data === 'object' && data) {
@@ -137,9 +125,6 @@ export const isTimeoutData = (data: any) => {
 /**
  * Check if a message from Janus is an ack.
  *
- * @private
- * @param {Object} data - The data from Janus
- * @returns {boolean} True if the check succeeds
  */
 export const isAckData = (data: any) => {
   if (typeof data === 'object' && data) {

@@ -12,67 +12,61 @@ npm install react-native-janus-mqtt
 
 ## Usage
 
+A brief usage for the library. For more, check on example app
 
 ```js
-import { Mqtt } from 'react-native-janus-mqtt';
-
+import { Connection } from 'react-native-janus-mqtt';
+import videocallPlugin from '../../src/plugins/videocall-plugin';
+import { Logger } from '../../src/utils';
+import type Session from '../../src/session';
+const LOG_NS = '[App.ts]';
 // ...
 
+let connection: Connection
+let session: Session
+let handle: any
 
-let client: any = null;
-function getClient() {
-  client = new Mqtt({
-    serverUrl: 'loprice.co.tz',
-    port: 5281,
-    clientId: undefined,
-    userName: 'ws@loprice.co.tz',
-    password: 'ws',
-    tojanus: 'tojanus',
-    fromjanus: 'fromjanus',
-    useSSL: true,
-    keepAliveInterval: 60,
-    willMessageOptions: {
-      topic: 'topic',
-      qos: 0,
-      retain: false,
-      message: 'will',
-    },
-    onSuccess: onSuccess,
-  });
 
-  client.onConnectionLost(onConnectionLost);
-  client.onMessageArrived(onMessageArrived);
-
-  client.connect();
-}
-
-// called when the client successfully connect to the mqtt broker
-function onSuccess() {
-  console.log('onSuccess: connected');
-}
-
-// publish to topic
-function publish() {
-  client.publish('/loprice/test', 'test');
-}
-
-// subscribe to topic
-function subscribe() {
-  client.subscribe('/loprice/test');
-}
-
-// called when the client loses its connection
-function onConnectionLost(responseObject: any) {
-  if (responseObject.errorCode !== 0) {
-    console.log('onConnectionLost:' + responseObject.errorMessage);
+  function janusMqttConect() {
+    //Create connection
+    connection = new Connection({
+      serverUrl: 'tuchati.loprice.co.tz',
+      port: 5281,
+      clientId: undefined,
+      userName: 'test@tuchati.loprice.co.tz',
+      password: 'test',
+      tojanus: 'to-janus',
+      fromjanus: 'from-janus',
+      useSSL: true,
+      keepAliveInterval: 0,
+      reconnect: true,
+      willMessageOptions: {
+        topic: 'topic',
+        qos: 0,
+        retain: false,
+        message: 'will',
+      },
+      onSuccess: () => {
+        connection.setJanusMessageListerner();
+        connection.setJanusMessageListerner2('status');
+        Logger(`${LOG_NS}  connected successfully`);
+      },
+    });
   }
-}
 
-// called when the client receive message
-function onMessageArrived(message: any) {
-  console.log(message);
+  // Create session
+  async function createSession() {
+    session = await connection.create();
+    Logger(session));
 
-}
+  }
+
+  // Create handle
+  async function createHandle() {
+    handle = await session.attach(videocallPlugin)
+    Logger(handle));
+  }
+
 
 ```
 

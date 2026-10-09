@@ -8,8 +8,8 @@ const LOG_NS = '[connection.ts]';
 
 class Connection extends EventEmitter {
   _tm: any;
-  _sessions: Map<string, any>;
-  id: any;
+  _sessions: Map<number, Session>;
+  id: number;
   name: string;
   _transport: any;
   //@ts-ignore
@@ -125,10 +125,6 @@ class Connection extends EventEmitter {
       /* This is a greceful teardown */
       /**
        * The connection has been gracefully closed.
-       *
-       * @event module:connection~Connection#event:CONNECTION_CLOSED
-       * @type {Object}
-       * @property {number} id - The connection identifier
        */
       this.emit(JANUSMQTT.EVENT.CONNECTION_CLOSED, { id: this.id });
     } else {
@@ -136,9 +132,6 @@ class Connection extends EventEmitter {
       const error = new Error('unexpected disconnection');
       /**
        * The connection has been unexpectedly closed.
-       *
-       * @event module:connection~Connection#event:CONNECTION_ERROR
-       * @type {Error}
        */
       this.emit(JANUSMQTT.EVENT.CONNECTION_ERROR, error);
     }
@@ -154,7 +147,7 @@ class Connection extends EventEmitter {
    * const session = await connection.create();
    * Logger.info(`***** SESSION CREATED *****`);
    */
-  async create(ka_interval: number) {
+  async create(ka_interval: number = 30) {
     Logger(`${LOG_NS} ${this.name} creating new session`);
 
     const request = {
@@ -172,7 +165,7 @@ class Connection extends EventEmitter {
 
       /* Create a new Janode Session and add it to the table */
       const session_instance = new Session(this, id, ka_interval);
-      this._sessions.set(session_instance.id.toString(), session_instance);
+      this._sessions.set(session_instance.id, session_instance);
 
       /* On session destroy delete the entry from session map and decrease the number of listeners */
       session_instance.once(JANUSMQTT.EVENT.SESSION_DESTROYED, ({ id }) => {

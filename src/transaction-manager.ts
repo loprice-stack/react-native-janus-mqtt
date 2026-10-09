@@ -2,8 +2,8 @@ import { getNumericID, Logger } from './utils';
 const LOG_NS = '[transaction-manager.ts]';
 
 export type PendingTransaction = {
-  id: string;
-  owner: Owner;
+  id: number;
+  owner: any;
   request: string;
   done: Function;
   error: Function;
@@ -11,19 +11,19 @@ export type PendingTransaction = {
 };
 
 export type Owner = {
-  id: string;
+  id: number;
 };
 
 class TransactionManager {
-  transactions: Map<string, PendingTransaction>;
-  id: string;
+  transactions: Map<number, PendingTransaction>;
+  id: number;
 
   /**
    * Create a Transacton Manager (TM)
    */
   constructor() {
     this.transactions = new Map();
-    this.id = getNumericID();
+    this.id = parseInt(getNumericID());
     Logger(`${LOG_NS} [${this.id}] creating new transaction manager`);
     //this._dbgtask = null;
     /* If tx debugging is enabled, periodically print the size of the tx table */
@@ -41,7 +41,7 @@ class TransactionManager {
   /**
    * Check if the TM has a specific transaction.
    */
-  has(id: string) {
+  has(id: number) {
     if (!id) return false;
     return this.transactions.has(id);
   }
@@ -49,7 +49,7 @@ class TransactionManager {
   /**
    * Get a specific transaction.
    */
-  get(id: string) {
+  get(id: number) {
     if (!id) return null;
     if (!this.has(id)) return null;
     return this.transactions.get(id);
@@ -62,7 +62,7 @@ class TransactionManager {
   /**
    * Add a pending transaction to the TM.
    */
-  set(id: string, transaction: PendingTransaction) {
+  set(id: number, transaction: PendingTransaction) {
     if (!id) return;
     if (!transaction) return;
     this.transactions.set(id, transaction);
@@ -72,7 +72,7 @@ class TransactionManager {
   /**
    * Delete a specific transaction from the TM.
    */
-  delete(id: string) {
+  delete(id: number) {
     if (!id) return;
     if (!this.has(id)) return;
     this.transactions.delete(id);
@@ -81,7 +81,7 @@ class TransactionManager {
   /**
    * Get the owner of a specific transaction id.
    */
-  getTransactionOwner(id: string) {
+  getTransactionOwner(id: number) {
     if (!id) return;
     if (!this.has(id)) return;
     //@ts-ignore
@@ -137,7 +137,7 @@ class TransactionManager {
    * Close a transaction with an error if the id is found and the owner matches.
    * The closed transaction will be removed from the internal table and the error cb will be invoked with the error string.
    */
-  closeTransactionWithError(id: string, owner: Owner, error: () => void) {
+  closeTransactionWithError(id: number, owner: Owner, error: Error) {
     const tx = this.get(id);
     if (!tx) return;
     if (tx.owner !== owner) return;
@@ -155,7 +155,7 @@ class TransactionManager {
    * If an owner is specified only the owner's transaction will be closed.
    * The closed transactions will be removed from the internal table.
    */
-  closeAllTransactionsWithError(owner: Owner, error: () => void) {
+  closeAllTransactionsWithError(owner: Owner, error: Error) {
     for (const [_, pendingTx] of this.transactions) {
       if (!owner || pendingTx.owner === owner)
         this.closeTransactionWithError(pendingTx.id, pendingTx.owner, error);
@@ -166,7 +166,7 @@ class TransactionManager {
    * Close a transaction with success if the id is found and the owner matches.
    * The closed transaction will be removed from the internal table and the success cb will be invoked with the specified data.
    */
-  closeTransactionWithSuccess(id: string, owner: Owner, data: any) {
+  closeTransactionWithSuccess(id: number, owner: any, data: any) {
     const tx = this.get(id);
     if (!tx) return;
     if (tx.owner !== owner) return;

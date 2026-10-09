@@ -126,6 +126,9 @@ class Mqtt {
 
   send(request: any) {
     this.publish(this.options.tojanus, request);
+    Logger(
+      `${LOG_NS} successfully send the request:  "${JSON.stringify(request)}"`
+    );
   }
 
   publish2(topic: string, payload: any, qos: 0 | 1 | 2, retain: boolean) {
