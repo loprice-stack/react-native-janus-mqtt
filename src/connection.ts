@@ -94,15 +94,39 @@ class Connection extends EventEmitter {
     return;
   }
 
+  /**
+   * Listen to message specified to options.
+   */
   setJanusMessageListerner() {
     this._transport.subscribe(this.options.fromjanus);
   }
+
+  /**
+   * Listen to message by explicity specification.
+   */
   setJanusMessageListerner2(topic: string) {
     this._transport.subscribe(topic);
   }
 
+  /**
+   * Send request to janus.
+   */
   send(request: any) {
     this._transport.publish(this.options.tojanus, request);
+  }
+
+  /**
+   * Change tojanus topic
+   */
+  setToJanusTopicOption(newtopic: string) {
+    this.options.tojanus = newtopic;
+  }
+
+  /**
+   * Change fromjanus topic
+   */
+  setFromJanusTopicOption(newtopic: string) {
+    this.options.fromjanus = newtopic;
   }
 
   /**
@@ -163,7 +187,7 @@ class Connection extends EventEmitter {
       /* The session will register two listeners */
       this.setMaxListeners(this.getMaxListeners() + 2);
 
-      /* Create a new Janode Session and add it to the table */
+      /* Create a new Session and add it to the table */
       const session_instance = new Session(this, id, ka_interval);
       this._sessions.set(session_instance.id, session_instance);
 

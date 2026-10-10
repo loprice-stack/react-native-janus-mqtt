@@ -276,19 +276,20 @@ export default function App() {
         <Button title="Register" onPress={() => register()} />
         <TextInput
           id="nm"
+
           value={username}
           onChangeText={(text) => {
             setUserName(text);
           }}
         />
+        <TextInput
+          id="cnm"
+          value={caller}
+          onChangeText={(text) => {
+            setCaller(text);
+          }}
+        />
       </View>
-      <TextInput
-        id="cnm"
-        value={caller}
-        onChangeText={(text) => {
-          setCaller(text);
-        }}
-      />
 
       <View style={{ flex: 1 }}>
         <View style={{ width: 800, height: '90%' }}>
@@ -365,7 +366,8 @@ export default function App() {
           }
         />
         <Button
-          title="Incomming"
+          title="Accept"
+          color={callstate == 'incoming' ? 'green' : undefined}
           disabled={callstate == 'incoming' ? false : true}
           onPress={() => acceptCall()}
         />

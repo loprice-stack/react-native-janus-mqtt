@@ -1,7 +1,7 @@
 {
   "name": "react-native-janus-mqtt",
-  "version": "0.1.1",
-  "description": "Connect Janus Wertc Server with Mqtt",
+  "version": "0.1.2",
+  "description": "react-native-janus-mqtt is an extension of Janode Node.js adapter for the Janus WebRTC server using MQTT as a transport",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
   "exports": {

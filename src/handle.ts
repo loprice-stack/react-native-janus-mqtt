@@ -566,12 +566,12 @@ class JanusMqttHandle extends EventEmitter {
    * await handle.message(body, jsep);
    *
    */
-  async message(body: any, jsep: any) {
-    const request = {
+  async message(body: any, jsep: any = undefined) {
+    const request: any = {
       janus: JANUS.REQUEST.MESSAGE,
       body,
     };
-    //@ts-ignore
+
     if (jsep) request.jsep = jsep;
 
     try {

@@ -4,12 +4,12 @@ import type Session from '../session';
 /**
  * This module contains the implementation of the VideoCall plugin (ref. {@link https://janus.conf.meetecho.com/docs/videocall.html}).
  *
- * Its just an ugly mimic of other plugin
+ * Its just an ugly mimic of other plugins
  */
 
 const PLUGIN_ID = 'janus.plugin.videocall';
 
-/* These are the requests defined for the Janus RecordPlay API */
+/* These are the requests defined for the Janus VideoCall API */
 //const REQUEST_LIST = 'list';
 const REQUEST_REGISTER = 'register';
 const REQUEST_SET = 'set';
@@ -17,7 +17,7 @@ const REQUEST_CALL = 'call';
 const REQUEST_ACCEPT = 'accept';
 const REQUEST_HANGUP = 'hangup';
 
-/* These are the events/responses that the Janode plugin will manage */
+/* These are the events/responses that the VideoCall plugin will manage */
 /* Some of them will be exported in the plugin descriptor */
 const PLUGIN_EVENT = {
   LIST: 'videocall_list',
@@ -57,8 +57,6 @@ class VideoCallHandle extends JanusMqttHandle {
    * The custom "handleMessage" needed for handling VideoCall messages.
    */
   _handleMessage(janus_message: any) {
-    //console.log(janus_message)
-
     const { janus, plugindata, transaction } = janus_message;
 
     //handle events
@@ -71,234 +69,168 @@ class VideoCallHandle extends JanusMqttHandle {
           //Got message
           const message_data = plugindata.data;
 
-          /* Prepare an object for the output Janode event */
-          //@ts-ignore
-          const janode_event = this._newPluginEvent(janus_message);
+          /* Prepare an object for the output JanusMqtt event */
+
+          const janusmqtt_event = this._newPluginEvent(janus_message);
 
           /* The plugin will emit an event only if the handle does not own the transaction */
           /* That means that a transaction has already been closed or this is an async event */
-          //@ts-ignore
+
           const emit = this.ownsTransaction(transaction) === false;
 
           const result = message_data.result.event;
           if (typeof result !== undefined) {
             switch (result) {
               case 'list':
-                janode_event.data.list = message_data.result.list;
-                janode_event.event = PLUGIN_EVENT.LIST;
-                console.log(
-                  '---------videocall-plugin--events----list---check--------------'
-                );
+                janusmqtt_event.data.list = message_data.result.list;
+                janusmqtt_event.event = PLUGIN_EVENT.LIST;
                 break;
               case 'registered':
-                janode_event.data.result = message_data.result;
-                janode_event.event = PLUGIN_EVENT.REGISTRED;
-                console.log(
-                  '---------videocall-plugin--events----registered---check--------------'
-                );
+                janusmqtt_event.data.result = message_data.result;
+                janusmqtt_event.event = PLUGIN_EVENT.REGISTRED;
                 break;
               case 'calling':
-                janode_event.data.result = message_data.result;
-                janode_event.event = PLUGIN_EVENT.CALLING;
-
-                console.log(
-                  '---------videocall-plugin--events----calling---check--------------'
-                );
+                janusmqtt_event.data.result = message_data.result;
+                janusmqtt_event.event = PLUGIN_EVENT.CALLING;
                 break;
               case 'incomingcall':
-                janode_event.data.result = message_data.result;
-                janode_event.event = PLUGIN_EVENT.INCOMMING;
-
-                console.log(janode_event.data.jsep);
-                console.log(
-                  '---------videocall-plugin--events----incomingcall---check--------------'
-                );
+                janusmqtt_event.data.result = message_data.result;
+                janusmqtt_event.event = PLUGIN_EVENT.INCOMMING;
                 break;
               case 'accepted':
-                janode_event.data.result = message_data.result;
-                janode_event.event = PLUGIN_EVENT.ACCEPTED;
-                console.log(
-                  '---------videocall-plugin--events----accepted---check--------------'
-                );
+                janusmqtt_event.data.result = message_data.result;
+                janusmqtt_event.event = PLUGIN_EVENT.ACCEPTED;
                 break;
               case 'update':
-                janode_event.data.result = message_data.result;
-                janode_event.event = PLUGIN_EVENT.UPDATE;
-                console.log(
-                  '---------videocall-plugin--events----update---check--------------'
-                );
+                janusmqtt_event.data.result = message_data.result;
+                janusmqtt_event.event = PLUGIN_EVENT.UPDATE;
                 break;
               case 'set':
-                janode_event.data.result = message_data.result;
-                janode_event.event = PLUGIN_EVENT.SET;
-                console.log(
-                  '---------videocall-plugin--events----set---check--------------'
-                );
+                janusmqtt_event.data.result = message_data.result;
+                janusmqtt_event.event = PLUGIN_EVENT.SET;
                 break;
               case 'hangup':
-                janode_event.data.result = message_data.result;
-                janode_event.event = PLUGIN_EVENT.HANGUP;
-                console.log(
-                  '---------videocall-plugin--events----hangup---check--------------'
-                );
+                janusmqtt_event.data.result = message_data.result;
+                janusmqtt_event.event = PLUGIN_EVENT.HANGUP;
                 break;
               case 'simulcast':
-                janode_event.data.result = message_data.result;
-                janode_event.event = PLUGIN_EVENT.SIMULCAST;
-                console.log(
-                  '---------videocall-plugin--events----simulcast---check--------------'
-                );
-                break;
-              /* Generic events (error, notifications ...) */
-              default:
-                console.log(
-                  '---------videocall-plugin--events----default---check--------------'
-                );
+                janusmqtt_event.data.result = message_data.result;
+                janusmqtt_event.event = PLUGIN_EVENT.SIMULCAST;
                 break;
             }
           }
 
           /* The event has been handled */
-          if (janode_event.event) {
+          if (janusmqtt_event.event) {
             /* Try to close the transaction */
-            //@ts-ignore
+
             this.closeTransactionWithSuccess(transaction, janus_message);
             /* If the transaction was not owned, emit the event */
-            //@ts-ignore
-            if (emit) this.emit(janode_event.event, janode_event.data);
-            console.log(janode_event);
-            console.log(
-              '----------videocall---events-----janode_event-----success-----'
-            );
-            return janode_event;
+
+            if (emit) this.emit(janusmqtt_event.event, janusmqtt_event.data);
+            return janusmqtt_event;
           }
         }
       } else {
         //handle all own and disowned errors
-        //@ts-ignore
-        const janode_event = this._newPluginEvent(janus_message);
 
-        //@ts-ignore
+        const janusmqtt_event = this._newPluginEvent(janus_message);
+
         const emit = this.ownsTransaction(transaction) === false;
 
         /* Handle VideoCall Error */
         switch (error_codee) {
           //register a username before calling
           case 473:
-            janode_event.data.error = janus_message.plugindata.data.error;
-            janode_event.data.error_code =
+            janusmqtt_event.data.error = janus_message.plugindata.data.error;
+            janusmqtt_event.data.error_code =
               janus_message.plugindata.data.error_code;
-            janode_event.event = PLUGIN_EVENT.ERROR;
-            console.log(
-              '---------videocall-plugin--events----error_code--473---check--------------'
-            );
+            janusmqtt_event.event = PLUGIN_EVENT.ERROR;
             break;
+
           //user name is taken when you want to register
           case 476:
-            janode_event.data.error = janus_message.plugindata.data.error;
-            janode_event.data.error_code =
+            janusmqtt_event.data.error = janus_message.plugindata.data.error;
+            janusmqtt_event.data.error_code =
               janus_message.plugindata.data.error_code;
-            janode_event.event = PLUGIN_EVENT.ERROR;
-            console.log(
-              '---------videocall-plugin--events----error_code--476---check--------------'
-            );
+            janusmqtt_event.event = PLUGIN_EVENT.ERROR;
             break;
 
           //user name doesnt exist when you try to call it
           case 478:
-            janode_event.data.error = janus_message.plugindata.data.error;
-            janode_event.data.error_code =
+            janusmqtt_event.data.error = janus_message.plugindata.data.error;
+            janusmqtt_event.data.error_code =
               janus_message.plugindata.data.error_code;
-            janode_event.event = PLUGIN_EVENT.ERROR;
-            console.log(
-              '---------videocall-plugin--events----error_code--478---check--------------'
-            );
+            janusmqtt_event.event = PLUGIN_EVENT.ERROR;
             break;
         }
 
         /* The event has been handled */
-        if (janode_event.event) {
+        if (janusmqtt_event.event) {
           /* Try to close the transaction */
-          //@ts-ignore
           this.closeTransactionWithSuccess(transaction, janus_message);
           /* If the transaction was not owned, emit the event */
-          //@ts-ignore
-          if (emit) this.emit(janode_event.event, janode_event.data);
-          console.log(janode_event);
-          console.log(
-            '----------videocall---events-----janode_event--error-----'
-          );
-          return janode_event;
+          if (emit) this.emit(janusmqtt_event.event, janusmqtt_event.data);
+          return janusmqtt_event;
         }
       }
     }
 
     //handle trickle
     if (janus == 'trickle') {
-      /* Prepare an object for the output Janode event */
-      //@ts-ignore
-      const janode_event = this._newPluginEvent(janus_message);
+      /* Prepare an object for the output JanusMqtt event */
+      const janusmqtt_event = this._newPluginEvent(janus_message);
       const { completed, sdpMid, sdpMLineIndex, candidate } =
         janus_message.candidate;
       /* The plugin will emit an event only if the handle does not own the transaction */
       /* That means that a transaction has already been closed or this is an async event */
-      //@ts-ignore
       const emit = this.ownsTransaction(transaction) === false;
 
       if (!completed) {
-        janode_event.data.sdpMid = sdpMid;
-        janode_event.data.sdpMLineIndex = sdpMLineIndex;
-        janode_event.data.candidate = candidate;
+        janusmqtt_event.data.sdpMid = sdpMid;
+        janusmqtt_event.data.sdpMLineIndex = sdpMLineIndex;
+        janusmqtt_event.data.candidate = candidate;
       } else {
-        janode_event.data.complete = true;
+        janusmqtt_event.data.complete = true;
       }
 
-      janode_event.event = PLUGIN_EVENT.TRICKLE;
+      janusmqtt_event.event = PLUGIN_EVENT.TRICKLE;
 
       /* The event has been handled */
-      if (janode_event.event) {
+      if (janusmqtt_event.event) {
         /* Try to close the transaction */
-        //@ts-ignore
         this.closeTransactionWithSuccess(transaction, janus_message);
         /* If the transaction was not owned, emit the event */
-        //@ts-ignore
-        if (emit) this.emit(janode_event.event, janode_event.data);
-        console.log(janode_event);
-        console.log(
-          '----------videocall---events-----janode_event--trickleeeeeee---success-----'
-        );
-        return janode_event;
+        if (emit) this.emit(janusmqtt_event.event, janusmqtt_event.data);
+        return janusmqtt_event;
       }
     }
 
     //handle dettached
     if (janus == 'detached') {
-      /* Prepare an object for the output Janode event */
-      //@ts-ignore
-      const janode_event = this._newPluginEvent(janus_message);
+      /* Prepare an object for the output JanusMqtt event */
+
+      const janusmqtt_event = this._newPluginEvent(janus_message);
       const { session_id, sender } = janus_message;
       /* The plugin will emit an event only if the handle does not own the transaction */
       /* That means that a transaction has already been closed or this is an async event */
-      //@ts-ignore
+
       const emit = this.ownsTransaction(transaction) === false;
 
-      janode_event.event = PLUGIN_EVENT.DETACHED;
-      janode_event.data.session_id = session_id;
-      janode_event.data.handle_id = sender;
+      janusmqtt_event.event = PLUGIN_EVENT.DETACHED;
+      janusmqtt_event.data.session_id = session_id;
+      janusmqtt_event.data.handle_id = sender;
 
       /* The event has been handled */
-      if (janode_event.event) {
+      if (janusmqtt_event.event) {
         /* Try to close the transaction */
-        //@ts-ignore
+
         this.closeTransactionWithSuccess(transaction, janus_message);
         /* If the transaction was not owned, emit the event */
-        //@ts-ignore
-        if (emit) this.emit(janode_event.event, janode_event.data);
-        console.log(janode_event);
-        console.log(
-          '----------videocall---events-----janode_event--detached---success-----'
-        );
-        return janode_event;
+
+        if (emit) this.emit(janusmqtt_event.event, janusmqtt_event.data);
+
+        return janusmqtt_event;
       }
     }
 
@@ -316,9 +248,9 @@ class VideoCallHandle extends JanusMqttHandle {
       request: REQUEST_REGISTER,
       username: user_id,
     };
-    //@ts-ignore
+
     const response = await this.message(body);
-    //@ts-ignore
+
     const { event, data: evtdata } = this._getPluginEvent(response);
 
     if (event === PLUGIN_EVENT.REGISTRED || PLUGIN_EVENT.ERROR) return evtdata;
@@ -334,9 +266,9 @@ class VideoCallHandle extends JanusMqttHandle {
       request: REQUEST_CALL,
       username: user_id,
     };
-    //@ts-ignore
+
     const response = await this.message(body, jsep);
-    //@ts-ignore
+
     const { event, data: evtdata } = this._getPluginEvent(response);
     if (event === PLUGIN_EVENT.CALLING || PLUGIN_EVENT.ERROR) return evtdata;
     const error = new Error(`unexpected response to ${body.request} request`);
@@ -348,9 +280,9 @@ class VideoCallHandle extends JanusMqttHandle {
       request: REQUEST_SET,
       audio: audio,
     };
-    //@ts-ignore
+
     const response = await this.message(body);
-    //@ts-ignore
+
     const { event, data: evtdata } = this._getPluginEvent(response);
     if (event === PLUGIN_EVENT.SET || PLUGIN_EVENT.ERROR) return evtdata;
     const error = new Error(`unexpected response to ${body.request} request`);
@@ -362,9 +294,9 @@ class VideoCallHandle extends JanusMqttHandle {
       request: REQUEST_SET,
       video: video,
     };
-    //@ts-ignore
+
     const response = await this.message(body);
-    //@ts-ignore
+
     const { event, data: evtdata } = this._getPluginEvent(response);
     if (event === PLUGIN_EVENT.SET || PLUGIN_EVENT.ERROR) return evtdata;
     const error = new Error(`unexpected response to ${body.request} request`);
@@ -377,9 +309,9 @@ class VideoCallHandle extends JanusMqttHandle {
       record: record,
       filename: filepath,
     };
-    //@ts-ignore
+
     const response = await this.message(body);
-    //@ts-ignore
+
     const { event, data: evtdata } = this._getPluginEvent(response);
     if (event === PLUGIN_EVENT.SET || PLUGIN_EVENT.ERROR) return evtdata;
     const error = new Error(`unexpected response to ${body.request} request`);
@@ -390,9 +322,9 @@ class VideoCallHandle extends JanusMqttHandle {
     const body = {
       request: REQUEST_SET,
     };
-    //@ts-ignore
+
     const response = await this.message(body, jsep);
-    //@ts-ignore
+
     const { event, data: evtdata } = this._getPluginEvent(response);
     if (event === PLUGIN_EVENT.SET || PLUGIN_EVENT.ERROR) return evtdata;
     const error = new Error(`unexpected response to ${body.request} request`);
@@ -400,9 +332,8 @@ class VideoCallHandle extends JanusMqttHandle {
   }
 
   async tricklee(candidate: any) {
-    //@ts-ignore
     const response = await this.trickle(candidate);
-    //@ts-ignore
+
     const { event, data: evtdata } = this._getPluginEvent(response);
     if (event === PLUGIN_EVENT.TRICKLE || PLUGIN_EVENT.ERROR) return evtdata;
     const error = new Error(`unexpected response to ${candidate} request`);
@@ -410,9 +341,8 @@ class VideoCallHandle extends JanusMqttHandle {
   }
 
   async trickleeComplete() {
-    //@ts-ignore
     const response = await this.trickleComplete();
-    //@ts-ignore
+
     const { event, data: evtdata } = this._getPluginEvent(response);
     if (event === PLUGIN_EVENT.TRICKLE || PLUGIN_EVENT.ERROR) return evtdata;
     const error = new Error(`unexpected response to ${null} request`);
@@ -423,9 +353,9 @@ class VideoCallHandle extends JanusMqttHandle {
     const body = {
       request: REQUEST_ACCEPT,
     };
-    //@ts-ignore
+
     const response = await this.message(body, jsep);
-    //@ts-ignore
+
     const { event, data: evtdata } = this._getPluginEvent(response);
     if (event === PLUGIN_EVENT.ACCEPTED || PLUGIN_EVENT.ERROR) return evtdata;
     const error = new Error(`unexpected response to ${body.request} request`);
@@ -436,9 +366,9 @@ class VideoCallHandle extends JanusMqttHandle {
     const body = {
       request: REQUEST_HANGUP,
     };
-    //@ts-ignore
+
     const response = await this.message(body);
-    //@ts-ignore
+
     const { event, data: evtdata } = this._getPluginEvent(response);
     if (event === PLUGIN_EVENT.HANGUP || PLUGIN_EVENT.ERROR) return evtdata;
     const error = new Error(`unexpected response to ${body.request} request`);
