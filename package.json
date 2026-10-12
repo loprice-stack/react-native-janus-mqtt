@@ -51,7 +51,7 @@
     "type": "git",
     "url": "git+https://github.com/loprice-stack/react-native-janus-mqtt.git"
   },
-  "author": "Loprice Limited <crackprojects2017@gmail.com> (https://github.com/loprice-stack)",
+  "author": "Majuto Lazaro Njola <crackprojects2017@gmail.com> (https://github.com/loprice-stack)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/loprice-stack/react-native-janus-mqtt/issues"
