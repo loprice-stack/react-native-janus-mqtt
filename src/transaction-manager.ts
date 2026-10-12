@@ -121,10 +121,10 @@ class TransactionManager {
 
     this.set(id, tx);
 
-    console.log(owner);
-    console.log(this.transactions);
-    console.log(
-      '-------------------------------transactions--------------------------------------------'
+    Logger(owner);
+    Logger(this.transactions);
+    Logger(
+      `${LOG_NS} [${tx.owner.id}]-------------------------------transactions--------------------------------------------`
     );
 
     Logger(

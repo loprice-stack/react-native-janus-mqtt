@@ -63,7 +63,7 @@ class Connection extends EventEmitter {
         Logger(`${LOG_NS} [${this.id}] connection lost! reason [${error}]`);
       });
       transport.onMessageArrived((message: any) => {
-        console.log(message.payloadString);
+        Logger(message.payloadString);
 
         this._handleMessage(JSON.parse(message.payloadString));
       });
@@ -243,10 +243,10 @@ class Connection extends EventEmitter {
   _handleMessage(janus_message: any) {
     const { session_id, transaction, janus } = janus_message;
 
-    //console.log(session_id);
-    //console.log(transaction);
-    //console.log(janus);
-    //console.log("--------session_id--------transaction------------janus------------------------------");
+    //Logger(session_id);
+    //Logger(transaction);
+    //Logger(janus);
+    //Logger("--------session_id--------transaction------------janus------------------------------");
 
     /* Check if a session is involved */
     if (session_id) {

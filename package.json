@@ -118,7 +118,7 @@
     ]
   },
   "codegenConfig": {
-    "name": "JanusMqttSpec",
+    "name": "NativeJanusMqtt",
     "type": "modules",
     "jsSrcsDir": "src",
     "outputDir": {
@@ -126,7 +126,7 @@
       "android": "android/generated"
     },
     "android": {
-      "javaPackageName": "com.janusmqtt"
+      "javaPackageName": "tz.com.loprice.janusmqtt"
     },
     "includesGeneratedCode": true
   },

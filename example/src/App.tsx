@@ -2,7 +2,7 @@ import { Text, View, StyleSheet, Button, TextInput } from 'react-native';
 import { Connection } from 'react-native-janus-mqtt';
 import { Logger } from '../../src/utils';
 import type Session from '../../src/session';
-import videocallPlugin from '../../src/plugins/videocall-plugin';
+import VideocallPlugin from '../../src/plugins/videocall-plugin';
 import { useState } from 'react';
 import {
   RTCPeerConnection,
@@ -65,7 +65,7 @@ export default function App() {
   }
 
   async function createHandle() {
-    handle = await session.attach(videocallPlugin);
+    handle = await session.attach(VideocallPlugin);
   }
 
   async function register() {
@@ -75,15 +75,16 @@ export default function App() {
 
   async function startCall() {
     try {
-      await pcListerners();
+      //setCallState("calling")
+      pcListerners();
       await setMediaStream(pc);
       const jsep = await createOffer(pc);
-      console.log('--------setting----all-------listerner------------');
-      //@ts-ignore
-      handle.call(caller, jsep);
+      Logger(`${LOG_NS} Starting a call`);
+
+      await handle.call(caller, jsep);
     } catch (err) {
-      console.log(err);
-      console.log('Error starting a call');
+      Logger(err);
+      Logger(`${LOG_NS} Error starting a call`);
     }
   }
 
@@ -106,51 +107,47 @@ export default function App() {
       await pcListerners();
       await setMediaStream(pc);
       const jsep = await createOfferAnser(pc, remotesdp);
-      //@ts-ignore
+
       handle.accept(jsep);
     } catch (err) {
-      console.log(err);
-      console.log('Error answering a call');
+      Logger(err);
+      Logger(`${LOG_NS} Error answering a call`);
     }
   }
 
   async function hangupCall() {
     try {
-      //@ts-ignore
       await handle.hangup();
       //stopAllStreams();
       //closePeerConnection(pc)
-      console.log('Hangup successfully');
+      Logger(`${LOG_NS} Hangup successfully`);
     } catch (err) {
-      console.log(err);
+      Logger(err);
       //close anyway
       //stopAllStreams();
       //closePeerConnection(pc)
-      console.log('Error closing a call');
+      Logger(`${LOG_NS} Error closing a call`);
     }
   }
 
   async function hangupCallRemote() {
     try {
-      //@ts-ignore
       setLocalstream(null);
-      console.log(' Local stream closed ');
-      //@ts-ignore
+      Logger(`${LOG_NS} Local stream closed `);
+
       setRemotestream(null);
-      console.log(' Remote stream closed ');
+      Logger(`${LOG_NS} Remote stream closed `);
       //closePeerConnection(pc)
-      console.log('We Hanguped successfully');
+      Logger(`${LOG_NS} We Hanguped successfully`);
     } catch (err) {
-      console.log(err);
+      Logger(`${LOG_NS} ${err}`);
       //close anyway
-      //@ts-ignore
       setLocalstream(null);
-      console.log(' Local stream closed ');
-      //@ts-ignore
+      Logger(`${LOG_NS} Local stream closed `);
       setRemotestream(null);
-      console.log(' Remote stream closed ');
+      Logger(`${LOG_NS} Remote stream closed `);
       //closePeerConnection(pc)
-      console.log('Error hanguped a call');
+      Logger(`${LOG_NS} Error hanguped a call`);
     }
   }
 
@@ -160,14 +157,14 @@ export default function App() {
     }
     remoteCandidates.map((candidate: any) => {
       peerConnection.addIceCandidate(candidate);
-      console.log(candidate);
-      console.log(
-        '---------------------saving--saved--remote---candidate-------------------------'
+      Logger(`${LOG_NS} ${candidate}`);
+      Logger(
+        `${LOG_NS}---------------------saving--saved--remote---candidate-------------------------`
       );
     });
-    console.log(remoteCandidates);
-    console.log(
-      '---------------------clearing--remote---candidate----list---------------------'
+    Logger(`${LOG_NS} ${remoteCandidates}`);
+    Logger(
+      `${LOG_NS}---------------------clearing--remote---candidate----list---------------------`
     );
     setRemoteCandidates([]);
   }
@@ -180,11 +177,12 @@ export default function App() {
         voiceActivityDetection: true,
       });
       await peerConnection.setLocalDescription(offerDescription);
-      console.log(' Got offer jsep ');
+      Logger(`${LOG_NS} Got offer jsep `);
       return offerDescription;
     } catch (err) {
-      console.log('Error creating offer' + err);
+      Logger(err);
     }
+    Logger(`${LOG_NS}------------------createOffer---------------------------`);
   }
 
   async function createOfferAnser(peerConnection: any, r_jsep: any) {
@@ -194,35 +192,40 @@ export default function App() {
         await peerConnection.setRemoteDescription(offerDescription);
         const answerDescription = await peerConnection.createAnswer();
         await peerConnection.setLocalDescription(answerDescription);
-        console.log(' Got answer jsep ');
+        Logger(`${LOG_NS} Got answer jsep `);
         return answerDescription;
       } else {
-        console.log('No offer jsep is found');
+        Logger(`${LOG_NS} No offer jsep is found`);
       }
     } catch (err) {
-      console.log(err);
+      Logger(err);
     }
+    Logger(
+      `${LOG_NS} ------------------createOfferAnser---------------------------`
+    );
   }
 
   async function saveReceivedJsepAnswer(peerConnection: any, r_jsep: any) {
     try {
       // Use the received receivedAnswerDescription
       const receivedAnswerDescription = new RTCSessionDescription(r_jsep);
-      console.log('Answer description object is ok');
-      console.log(peerConnection.signalingState);
-      console.log('-----------------signalingstatechange---------------');
+      Logger(`${LOG_NS} Answer description object is ok`);
+      Logger(`${LOG_NS} ${peerConnection.signalingState}`);
+      Logger(`${LOG_NS}-----------------signalingstatechange---------------`);
       await peerConnection.setRemoteDescription(receivedAnswerDescription);
-      console.log(' Saved answer jsep ');
+      Logger(`${LOG_NS} Saved answer jsep `);
     } catch (err) {
-      console.log(err);
-      console.log(
-        '---------------------------------answer---jse----error-----------------------'
+      Logger(err);
+      Logger(
+        `${LOG_NS}---------------------------------answer---jse----error-----------------------`
       );
     }
   }
 
   async function setMediaStream(peerConnection: any) {
     try {
+      Logger(`${LOG_NS} Setting local media stream`);
+
       const mediaStream = await mediaDevices.getUserMedia({
         audio: true,
         video: {
@@ -231,12 +234,12 @@ export default function App() {
       });
 
       setLocalstream(mediaStream);
-      mediaStream.getTracks().forEach(
-        //@ts-ignore
-        (track) => peerConnection.addTrack(track, mediaStream)
-      );
+
+      mediaStream
+        .getTracks()
+        .forEach((track: any) => peerConnection.addTrack(track, mediaStream));
     } catch (err) {
-      console.log(err);
+      Logger(`${LOG_NS} ${err}`);
     }
   }
 
@@ -250,6 +253,7 @@ export default function App() {
     pc.getReceivers().forEach((receiver) => {
       if (receiver.track) receiver.track.stop();
     });
+
     //@ts-ignore
     pc.onnegotiationneeded = null;
     //@ts-ignore
@@ -335,31 +339,31 @@ export default function App() {
       >
         <Button
           title={
-            callstate == 'incoming' ||
-            callstate == 'calling' ||
-            callstate == 'connecting' ||
-            callstate == 'connected' ||
-            callstate == 'accepted'
+            callstate === 'incoming' ||
+            callstate === 'connecting' ||
+            callstate === 'calling' ||
+            callstate === 'connected' ||
+            callstate === 'accepted'
               ? 'Hangup'
               : 'Call'
           }
           color={
-            callstate == 'incoming' ||
-            callstate == 'calling' ||
-            callstate == 'connecting' ||
-            callstate == 'connected' ||
-            callstate == 'accepted'
+            callstate === 'incoming' ||
+            callstate === 'connecting' ||
+            callstate === 'calling' ||
+            callstate === 'connected' ||
+            callstate === 'accepted'
               ? 'red'
               : 'green'
           }
           onPress={
             //"call" | "calling" | "incoming" | "hangup" | "iddle" | "connected" | "accepted"
             () => {
-              callstate == 'incoming' ||
-              callstate == 'calling' ||
-              callstate == 'connecting' ||
-              callstate == 'connected' ||
-              callstate == 'accepted'
+              callstate === 'incoming' ||
+              callstate === 'calling' ||
+              callstate === 'connecting' ||
+              callstate === 'connected' ||
+              callstate === 'accepted'
                 ? hangupCall()
                 : startCall();
             }
@@ -367,8 +371,8 @@ export default function App() {
         />
         <Button
           title="Accept"
-          color={callstate == 'incoming' ? 'green' : undefined}
-          disabled={callstate == 'incoming' ? false : true}
+          color={callstate === 'incoming' ? 'green' : undefined}
+          disabled={callstate === 'incoming' ? false : true}
           onPress={() => acceptCall()}
         />
       </View>
@@ -376,105 +380,108 @@ export default function App() {
   );
 
   function eventCalling(vch: any) {
-    vch.once(videocallPlugin.EVENT.VIDEOCALL_CALLING, (evtdata: any) => {
+    vch.once(VideocallPlugin.EVENT.VIDEOCALL_CALLING, (evtdata: any) => {
       setCallState('calling');
-      console.log(evtdata);
-      console.log(
-        '-------------------------calling--------------------------------'
+      Logger(evtdata);
+      Logger(
+        `${LOG_NS} ----------------------eventCalling------------------------------`
       );
     });
   }
 
   function eventIcomming(vch: any) {
-    vch.once(videocallPlugin.EVENT.VIDEOCALL_INCOMMING, (evtdata: any) => {
+    vch.once(VideocallPlugin.EVENT.VIDEOCALL_INCOMMING, (evtdata: any) => {
       setCallState('incoming');
       const jsep = evtdata.jsep;
       setRemoteSdp(jsep);
-      console.log(
-        '-------------------------icomming--call------------------------------'
+      Logger(evtdata);
+      Logger(
+        `${LOG_NS} ----------------------eventIcomming------------------------------`
       );
     });
   }
 
   function eventTricle(vch: any) {
     let remoCandidates = [];
-    vch.on(videocallPlugin.EVENT.VIDEOCALL_TRICKLE, (evtdata: any) => {
+    vch.on(VideocallPlugin.EVENT.VIDEOCALL_TRICKLE, (evtdata: any) => {
       if (
         signalingstatechange == 'have-local-offer' ||
         signalingstatechange == 'stable'
       ) {
         const completed = evtdata.complete;
         if (completed) {
-          //@ts-ignore
           remoCandidates.push(null);
           //@ts-ignore
           setRemoteCandidates(remoCandidates);
-          console.log(remoteCandidates);
-          console.log(
-            '------------------null--------list------------------------------------'
-          );
+          Logger(`${LOG_NS} ${remoteCandidates}`);
+          Logger(`${LOG_NS} ${evtdata}`);
         } else {
           const iceCandidate = new RTCIceCandidate(evtdata);
-          //@ts-ignore
+
           remoCandidates.push(iceCandidate);
-          console.log(remoteCandidates);
-          console.log(
-            '--------------------------list------------------------------------'
-          );
+          Logger(`${LOG_NS} ${remoteCandidates}`);
+          Logger(`${LOG_NS} ${evtdata}`);
         }
       }
+      Logger(
+        `${LOG_NS} ----------------------eventTricle------------------------------`
+      );
     });
   }
 
   function eventAccepted(vch: any) {
-    vch.once(videocallPlugin.EVENT.VIDEOCALL_ACCEPTED, (evtdata: any) => {
+    vch.once(VideocallPlugin.EVENT.VIDEOCALL_ACCEPTED, (evtdata: any) => {
       const jsep = evtdata.jsep;
       saveReceivedJsepAnswer(pc, jsep);
-      console.log(
-        '-------------------------accepted--------------------------------'
+      Logger(evtdata);
+      Logger(
+        `${LOG_NS} ----------------------eventAccepted------------------------------`
       );
     });
   }
 
   function eventHangup(vch: any) {
-    vch.once(videocallPlugin.EVENT.VIDEOCALL_HANGUP, (evtdata: any) => {
+    vch.once(VideocallPlugin.EVENT.VIDEOCALL_HANGUP, (evtdata: any) => {
       const reason = evtdata.result.reason;
       const username = evtdata.result.username;
-      console.log(reason);
-      console.log(username);
+      Logger(`${LOG_NS} ${reason}`);
+      Logger(`${LOG_NS} ${username}`);
       setCallState('hangup');
       hangupCallRemote();
-      console.log(
-        '-------------------------hangupCallRemote--------------------------------'
+      Logger(evtdata);
+      Logger(
+        `${LOG_NS} ----------------------eventHangup------------------------------`
       );
     });
   }
 
   function eventDetached(vch: any) {
-    vch.once(videocallPlugin.EVENT.VIDEOCALL_DETACHED, (evtdata: any) => {
+    vch.once(VideocallPlugin.EVENT.VIDEOCALL_DETACHED, (evtdata: any) => {
       setCallState('hangup');
-      console.log(evtdata);
       handle = null;
-      console.log('--------videocall--handle---detached----------');
+      Logger(evtdata);
+      Logger(
+        `${LOG_NS} ----------------------eventDetached------------------------------`
+      );
     });
   }
 
   //This was attempt on call update when you want
-  // to swiitch face camera from user to environment
+  //to swiitch face camera from user to environment
   //while the call is in connected state
   function eventUpdate(vch: any) {
-    vch.once(videocallPlugin.EVENT.VIDEOCALL_UPDATE, (evtdata: any) => {
+    vch.once(VideocallPlugin.EVENT.VIDEOCALL_UPDATE, (evtdata: any) => {
       const jsep = evtdata.jsep;
       if (jsep) {
         if (jsep.type == 'offer') {
-          console.log(
-            '-------------videocall--handle---update--we-received--offer-----------'
-          );
         } else if (jsep.type == 'answer') {
           saveReceivedJsepAnswer(pc, jsep);
         }
       }
-      console.log('-------------videocall--handle---update--------------');
+      Logger(evtdata);
+      Logger(
+        `${LOG_NS} ----------------------eventUpdate------------------------------`
+      );
     });
   }
 
@@ -482,12 +489,11 @@ export default function App() {
     if (peerConnection !== null) {
       peerConnection.addEventListener('track', (event: any) => {
         setRemotestream(event.streams[0]);
-
-        console.log(
-          '----------------------track----remote-----------------------------'
+        Logger(event);
+        Logger(
+          `${LOG_NS}--------------remote---tracks---[kind=${event.track.kind}]------------`
         );
       });
-
       peerConnection.addEventListener('connectionstatechange', (event: any) => {
         switch (peerConnection.connectionState) {
           case 'closed':
@@ -495,39 +501,63 @@ export default function App() {
             break;
         }
         setCallState(peerConnection.connectionState);
-        console.log(event);
-        console.log(peerConnection.connectionState);
-        console.log('-----------------connectionstatechange---------------');
+        Logger(`${LOG_NS} ${peerConnection.connectionState}`);
+        Logger(event);
+        Logger(
+          `${LOG_NS}-----------------connectionstatechange---------------`
+        );
       });
 
       peerConnection.addEventListener('icecandidate', (event: any) => {
         // When you find a null candidate then there are no more candidates.
         // Gathering of candidates has finished.
+
         try {
-          const candidate = {
-            candidate: event.candidate.candidate,
-            sdpMLineIndex: event.candidate.sdpMLineIndex,
-            sdpMid: event.candidate.sdpMid,
-          };
-          vch.tricklee(candidate);
-          console.log(candidate);
-          // Send the event.candidate onto the person you're calling.
+          const candidate = event.candidate;
+
+          if (candidate) {
+            const candidate = {
+              candidate: event.candidate.candidate,
+              sdpMLineIndex: event.candidate.sdpMLineIndex,
+              sdpMid: event.candidate.sdpMid,
+            };
+            vch.tricklee(candidate);
+            Logger(candidate);
+          } else {
+            //posible candidates
+
+            const candidates = event.candidate;
+            if (candidates) {
+              candidates.map((candidate: RTCIceCandidate) => {
+                const c = {
+                  candidate: candidate.candidate,
+                  sdpMLineIndex: candidate.sdpMLineIndex,
+                  sdpMid: candidate.sdpMid,
+                };
+                vch.tricklee(c);
+                Logger(c);
+              });
+            }
+          }
+          // Send the candidate onto the person you're calling.
           // Keeping to Trickle ICE Standards, you should send the candidates immediately.
         } catch (null_candidate) {
           vch.trickleeComplete();
-          console.log(null_candidate);
+          Logger(`${LOG_NS} ${null_candidate}`);
         }
-        console.log(
-          '----------------------icecandidate----stufF---------------'
+
+        Logger(event);
+        Logger(
+          `${LOG_NS} ----------------------icecandidate----stufF---------------`
         );
       });
 
       peerConnection.addEventListener('icecandidateerror', (event: any) => {
         // You can ignore some candidate errors.
         // Connections can still be made even when errors occur.
-        console.log(event);
-        console.log(
-          '----------------------icecandidateerror----stufF---------------'
+        Logger(event);
+        Logger(
+          `${LOG_NS}----------------------icecandidateerror----stufF---------------`
         );
       });
 
@@ -543,10 +573,11 @@ export default function App() {
           } else if (peerConnection.iceConnectionState === 'connected') {
           } else if (peerConnection.iceConnectionState === 'completed') {
           }
-          console.log(peerConnection.iceConnectionState);
-          console.log(event);
-          console.log(
-            '-----------------iceconnectionstatechange---------------'
+          Logger(`${LOG_NS} ${peerConnection.iceConnectionState}`);
+          Logger(event);
+          setCallState(peerConnection.iceConnectionState);
+          Logger(
+            `${LOG_NS}-----------------iceconnectionstatechange---------------`
           );
         }
       );
@@ -554,8 +585,8 @@ export default function App() {
       peerConnection.addEventListener('negotiationneeded', (event: any) => {
         // You can start the offer stages here.
         // Be careful as this event can be called multiple times.
-        console.log(event);
-        console.log('----------negotiationneeded---------------');
+        Logger(event);
+        Logger(`${LOG_NS}----------negotiationneeded---------------`);
       });
 
       peerConnection.addEventListener('signalingstatechange', (event: any) => {
@@ -569,12 +600,12 @@ export default function App() {
             break;
         }
         setSignalingstatechange(peerConnection.signalingState);
-        console.log(event);
-        console.log(peerConnection.signalingState);
-        console.log('-----------------signalingstatechange---------------');
+        Logger(event);
+        Logger(`${LOG_NS} ${peerConnection.signalingState}`);
+        Logger(`${LOG_NS}-----------------signalingstatechange---------------`);
       });
     } else {
-      console.log('----------null---------peerconnection---------------');
+      Logger(`${LOG_NS}----------null---------peerconnection---------------`);
     }
   }
 }
