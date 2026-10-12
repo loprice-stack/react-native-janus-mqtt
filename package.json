@@ -15,11 +15,7 @@
   "files": [
     "src",
     "lib",
-    "android",
-    "ios",
-    "cpp",
-    "*.podspec",
-    "react-native.config.js",
+    "licenses",
     "!ios/build",
     "!android/build",
     "!android/gradle",
