@@ -1,27 +1,29 @@
-
 name: Publish Package
-
 on:
   push:
-   # tags:
-   #   - 'v*'
+    #tags:
+    #  - 'v*'
 
 permissions:
-  id-token: write  # Required for OIDC
+  id-token: write # Required for OIDC
   contents: read
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@v6
 
-      - uses: ./.github/actions/setup
+      - uses: actions/setup-node@v6
         with:
-          node-version: .nvmrc
-          package-manager-cache: false  # never use caching in release builds
-      - run: yarn prepare
-      - run: npm test
-      - run: npm publish  # Or: npm stage publish
-    env:
-      publish_env: ${{ secrets.NPM_TOKEN }}
+          node-version-file: '.nvmrc'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies & prepare
+        run: yarn install --frozen-lockfile && yarn prepare
+
+      - name: Run tests
+        run: npm test
+
+      - name: Publish to npm
+        run: npm publish --provenance --access public
