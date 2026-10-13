@@ -14,7 +14,11 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
+  
+permissions:
+  id-token: write  # Required for OIDC
+  contents: read
+  
 jobs:
   lint:
     runs-on: ubuntu-latest
