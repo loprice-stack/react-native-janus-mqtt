@@ -14,9 +14,9 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@.nvmrc
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@.nvmrc
+      - uses: actions/setup-node@v6
         with:
           node-version: .nvmrc
           registry-url: 'https://registry.npmjs.org'
