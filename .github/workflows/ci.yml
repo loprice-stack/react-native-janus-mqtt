@@ -88,4 +88,5 @@ jobs:
             package-manager-cache: false  # never use caching in release builds
         - run: yarn prepare
         - run: npm publish --provenance --access public
-
+    env:
+      NODE_AUTH_TOKEN: ${{ publish_env.NPM_TOKEN }}
