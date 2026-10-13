@@ -85,7 +85,6 @@ jobs:
         - uses: ./.github/actions/setup
           with:
             node-version: .nvmrc
-            registry-url: 'https://registry.npmjs.org'
             package-manager-cache: false  # never use caching in release builds
         - run: yarn prepare
         - run: npm publish --provenance --access public
