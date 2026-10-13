@@ -77,16 +77,3 @@ jobs:
         run: |
           yarn example build:web
 
-  publish:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-
-        - uses: ./.github/actions/setup
-          with:
-            node-version: .nvmrc
-            package-manager-cache: false  # never use caching in release builds
-        - run: yarn prepare
-        - run: npm publish --provenance --access public
-      env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
