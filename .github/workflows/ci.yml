@@ -88,5 +88,5 @@ jobs:
             registry-url: 'https://registry.npmjs.org'
             package-manager-cache: false  # never use caching in release builds
         - run: yarn prepare
-        - run: npm publish  # Or: npm stage publish
+        - run: npm publish --provenance --access public
 
