@@ -57,17 +57,6 @@ jobs:
       - name: Build package
         run: yarn prepare
 
-      # Publish to NPM
-      - name: Setup
-        uses: ./.github/actions/setup
-        with:
-          node-version: .nvmrc
-          registry-url: https://registry.npmjs.org/
-
-      - name: Publish to NPM
-        run: npm publish
-        env:
-            NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   build-web:
     runs-on: ubuntu-latest
@@ -82,3 +71,31 @@ jobs:
       - name: Build example for Web
         run: |
           yarn example build:web
+
+
+name: Publish Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  id-token: write  # Required for OIDC
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false  # never use caching in release builds
+      - run: npm ci
+      - run: npm run build --if-present
+      - run: npm test
+      - run: npm publish  # Or: npm stage publish
