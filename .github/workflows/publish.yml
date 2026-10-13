@@ -14,9 +14,9 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-      - uses: actions/setup-node@v6
+      - uses: ./.github/actions/setup
         with:
           node-version: .nvmrc
           registry-url: 'https://registry.npmjs.org'
@@ -24,6 +24,5 @@ jobs:
       - run: npm run build --if-present
       - run: npm test
       - run: npm publish  # Or: npm stage publish
-
     env:
       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
