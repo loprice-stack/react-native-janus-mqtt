@@ -19,7 +19,6 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           node-version: .nvmrc
-          registry-url: 'https://registry.npmjs.org:_authToken=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'
           package-manager-cache: false  # never use caching in release builds
       - run: yarn prepare
       - run: npm test
