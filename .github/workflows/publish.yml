@@ -25,4 +25,4 @@ jobs:
       - run: npm test
       - run: npm publish  # Or: npm stage publish
     env:
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      publish_env: ${{ secrets.NPM_TOKEN }}
