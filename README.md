@@ -4,6 +4,7 @@ This library enables you to connect to [Janus Webrtc Server](https://janus.conf.
 
 #### Plugins implementations
 + videocall-plugin
++ videoroom-plugin
 
 ## Installation
 
