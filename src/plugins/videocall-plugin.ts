@@ -60,7 +60,7 @@ class VideoCallHandle extends JanusMqttHandle {
     const { janus, plugindata, transaction } = janus_message;
 
     //handle events
-    if (janus == 'event') {
+    if (janus === 'event') {
       //hack event to handle error first
       const error_codee = janus_message.plugindata.data.error_code;
       if (typeof error_codee !== 'number') {
@@ -76,7 +76,7 @@ class VideoCallHandle extends JanusMqttHandle {
           /* The plugin will emit an event only if the handle does not own the transaction */
           /* That means that a transaction has already been closed or this is an async event */
 
-          const emit = this.ownsTransaction(transaction) === false;
+          const emit = this.ownsTransaction(transaction);
 
           const result = message_data.result.event;
           if (typeof result !== undefined) {
@@ -177,7 +177,7 @@ class VideoCallHandle extends JanusMqttHandle {
     }
 
     //handle trickle
-    if (janus == 'trickle') {
+    if (janus === 'trickle') {
       /* Prepare an object for the output JanusMqtt event */
       const janusmqtt_event = this._newPluginEvent(janus_message);
       const { completed, sdpMid, sdpMLineIndex, candidate } =
@@ -207,7 +207,7 @@ class VideoCallHandle extends JanusMqttHandle {
     }
 
     //handle dettached
-    if (janus == 'detached') {
+    if (janus === 'detached') {
       /* Prepare an object for the output JanusMqtt event */
 
       const janusmqtt_event = this._newPluginEvent(janus_message);
@@ -215,7 +215,7 @@ class VideoCallHandle extends JanusMqttHandle {
       /* The plugin will emit an event only if the handle does not own the transaction */
       /* That means that a transaction has already been closed or this is an async event */
 
-      const emit = this.ownsTransaction(transaction) === false;
+      const emit = this.ownsTransaction(transaction);
 
       janusmqtt_event.event = PLUGIN_EVENT.DETACHED;
       janusmqtt_event.data.session_id = session_id;

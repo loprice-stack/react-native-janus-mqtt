@@ -226,8 +226,9 @@ class Session extends EventEmitter {
 
     /* First check if a handle is involved */
     if (sender) {
+      let hndleid = parseInt(sender);
       /* Look for the handle in the map */
-      const handle = this._handles.get(parseInt(sender));
+      const handle = this._handles.get(hndleid);
       /* If the handle is missing notifies the user */
       if (!handle) {
         if (janus === JANUS.EVENT.DETACHED) {
@@ -439,8 +440,8 @@ class Session extends EventEmitter {
       this._handles.set(handle_instance.id, handle_instance);
 
       /* On handle detach delete the entry from handle map and decrease the number of listeners */
-      handle_instance.once(JANUSMQTT.EVENT.HANDLE_DETACHED, ({ id }: any) => {
-        this._handles.delete(id);
+      handle_instance.once(JANUSMQTT.EVENT.HANDLE_DETACHED, ({ _id }: any) => {
+        this._handles.delete(_id);
         this.setMaxListeners(this.getMaxListeners() - 1);
       });
 

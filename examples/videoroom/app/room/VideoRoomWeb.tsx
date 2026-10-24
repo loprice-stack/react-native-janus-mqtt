@@ -1,17 +1,5 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import {
-  RTCPeerConnection,
-  RTCIceCandidate,
-  RTCSessionDescription,
-  RTCRtpTransceiver,
-  RTCRtpReceiver,
-  RTCRtpSender,
-  RTCErrorEvent,
-  MediaStream,
-  MediaStreamTrack,
-  mediaDevices,
-  permissions,
-  registerGlobals,
   RTCView,
   //@ts-ignore
 } from 'react-native-webrtc-web-shim';
@@ -26,7 +14,6 @@ import {
   setSubRemoteStream,
   setPublishers,
   setParticipants,
-  findSubRemoteStreamReserve,
   type SubscriptionsObject,
   setStreamRoomDisplay,
 } from './conferenceSlice';
@@ -35,7 +22,6 @@ import {
   closePcSub,
   doOffer,
   doOfferAnswer,
-  doOfferAnswerUpdate,
   saveReceivedJsepAnswer,
 } from './videoroom-plugin-wbrtc';
 import { useAppDispatch, useAppSelector } from '../store';
@@ -63,7 +49,6 @@ let handleSub: any;
 export default function Conference() {
   const { width, height } = useWindowDimensions();
   const {
-    feed_,
     stream_title,
     stream_room,
     pub_localstream,
@@ -77,10 +62,10 @@ export default function Conference() {
 
   function janusMqttConect() {
     connection = new Connection({
-      serverUrl: 'tuchati.loprice.co.tz',
+      serverUrl: 'example.co.tz',
       port: 5281,
       clientId: undefined,
-      userName: 'test@tuchati.loprice.co.tz',
+      userName: 'test@example.co.tz',
       password: 'test',
       tojanus: 'to-janus',
       fromjanus: 'from-janus',
@@ -107,7 +92,7 @@ export default function Conference() {
 
   async function createHandlePub() {
     session !== undefined
-      ? await session.attach(VideoRoomHandle).then((handle) => {
+      ? await session.attach(VideoRoomHandle).then((handle: any) => {
           handlePub = handle;
           videoRoomPubEvents();
         })
@@ -289,7 +274,7 @@ export default function Conference() {
               //Tear down handle and create another one
               if (isSessionDefined()) {
                 await closeSession();
-                createSession().then(async (r) => {
+                createSession().then(async () => {
                   await createHandlePub();
                   joinPublishFeed();
                   await createHandleSub();
@@ -492,6 +477,7 @@ export default function Conference() {
     }
   }
 
+  /** 
   async function joinSubscribeSubscriberRefresh() {
     if (isSessionDefined()) {
       if (isSubDefined()) {
@@ -561,18 +547,19 @@ export default function Conference() {
     }
   }
 
+  **/
   function unPublishFeed() {
     //Publish your feed
 
     if (isPubDefined()) {
       handlePub
         .unpublish()
-        .then((res: any) => {
+        .then(() => {
           closePcPub(pc);
           closePcSub(pc);
           dispatch(setPubLocalStream(null));
         })
-        .catch((error: any) => {
+        .catch(() => {
           closePcPub(pc);
           closePcSub(pc);
           dispatch(setPubLocalStream(null));
@@ -609,6 +596,7 @@ export default function Conference() {
     }
   }
 
+  /** 
   function subscribeToNewFeed(streams: any) {
     handleSub
       .subscribe({ streams: streams })
@@ -654,6 +642,7 @@ export default function Conference() {
       });
   }
 
+  **/
   function unSubscribe() {
     if (isSubDefined()) {
       Logger(subscriptions);
@@ -995,6 +984,7 @@ export default function Conference() {
           //const jsepp = evtdata.jsep
           //subscribeToNewFeedStart(jsepp)
           //dispatch(setRemoteJsep(jsepp))
+          Logger(evtdata);
           Logger(
             `${LOG_NS} VideoRoomHandle", '-----------updated--------', evtdata`
           );
@@ -1006,6 +996,7 @@ export default function Conference() {
       handlePub.once(
         VideoRoomHandle.EVENT.VIDEOROOM_DESTROYED,
         (evtdata: any) => {
+          Logger(evtdata);
           Logger(`${LOG_NS} VideoRoomHandle", 'destroyed', evtdata`);
         }
       );
@@ -1013,6 +1004,7 @@ export default function Conference() {
       handlePub.once(
         VideoRoomHandle.EVENT.VIDEOROOM_PUB_LIST,
         (evtdata: any) => {
+          Logger(evtdata);
           //subscribeToNewFeed([{ feed: evtdata.publishers[0].feed }])
           Logger(`${LOG_NS} VideoRoomHandle", 'feed-list', evtdata`);
         }
@@ -1021,6 +1013,7 @@ export default function Conference() {
       handlePub.once(
         VideoRoomHandle.EVENT.VIDEOROOM_PUB_PEER_JOINED,
         (evtdata: any) => {
+          Logger(evtdata);
           //subscribe({ vrh_sub: videoRoomContext.vrh_sub, streams: [{ feed: evtdata.feed }] })
 
           Logger(`${LOG_NS} VideoRoomHandle", 'feed-joined', evtdata`);
@@ -1031,7 +1024,7 @@ export default function Conference() {
         VideoRoomHandle.EVENT.VIDEOROOM_UNPUBLISHED,
         (evtdata: any) => {
           //unsubscribe({ vrh_sub: videoRoomContext.vrh_sub, streams : [{ feed: evtdata.feed }] })
-
+          Logger(evtdata);
           Logger(`${LOG_NS} VideoRoomHandle: 'unpublished'`);
         }
       );
@@ -1042,6 +1035,7 @@ export default function Conference() {
           //if (pubHandle.feed === evtdata.feed) {
           //    await msHandles.detachPubHandle();
           //}
+          Logger(evtdata);
           Logger(`${LOG_NS} VideoRoomHandle: 'leaving'`);
         }
       );
@@ -1049,6 +1043,7 @@ export default function Conference() {
       handlePub.once(
         VideoRoomHandle.EVENT.VIDEOROOM_DISPLAY,
         (evtdata: any) => {
+          Logger(evtdata);
           Logger(`${LOG_NS} VideoRoomHandle:  'display'`);
         }
       );
@@ -1056,6 +1051,7 @@ export default function Conference() {
       handlePub.once(
         VideoRoomHandle.EVENT.VIDEOROOM_TALKING,
         (evtdata: any) => {
+          Logger(evtdata);
           Logger(`${LOG_NS} VideoRoomHandle: talking`);
         }
       );
@@ -1063,6 +1059,7 @@ export default function Conference() {
       handlePub.once(
         VideoRoomHandle.EVENT.VIDEOROOM_KICKED,
         async (evtdata: any) => {
+          Logger(evtdata);
           Logger(`${LOG_NS} VideoRoomHandle", 'kicked', evtdata`);
         }
       );

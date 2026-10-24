@@ -23,7 +23,7 @@
   ],
   "scripts": {
     "example": "yarn workspace react-native-janus-mqtt-example",
-    "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
+    "clean": "del-cli lib",
     "prepare": "bob build",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",

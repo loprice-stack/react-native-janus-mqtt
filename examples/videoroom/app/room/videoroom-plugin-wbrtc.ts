@@ -4,16 +4,8 @@ import {
   RTCPeerConnection,
   RTCIceCandidate,
   RTCSessionDescription,
-  RTCRtpTransceiver,
-  RTCRtpReceiver,
-  RTCRtpSender,
-  RTCErrorEvent,
   MediaStream,
-  MediaStreamTrack,
   mediaDevices,
-  permissions,
-  registerGlobals,
-  RTCView,
   //@ts-ignore
 } from 'react-native-webrtc-web-shim';
 import {
@@ -25,7 +17,6 @@ import { JANUSMQTT } from './../../node_modules/react-native-janus-mqtt/src/prot
 import { Logger } from '../../node_modules/react-native-janus-mqtt/src/utils';
 const LOG_NS = '[videoroom-plugin-wbrtc.ts]';
 
-
 //May be used by publisher handle
 export async function doOffer(handlePub: any, peerContx: any) {
   peerContx.pcPub = new RTCPeerConnection({
@@ -33,8 +24,10 @@ export async function doOffer(handlePub: any, peerContx: any) {
   });
 
   //@ts-ignore
-  peerContx.pcPub.onnegotiationneeded = (event) =>
+  peerContx.pcPub.onnegotiationneeded = (event) => {
+    Logger(event);
     Logger(peerContx.pcPub.onnegotiationneeded);
+  };
 
   //@ts-ignore
   peerContx.pcPub.onicecandidate = (event) => {
@@ -75,14 +68,17 @@ export async function doOffer(handlePub: any, peerContx: any) {
     } else if (peerContx.pcPub.iceConnectionState === 'completed') {
     }
     Logger(peerContx.pcPub.iceConnectionState);
-    
+    Logger(event);
     Logger(
       `${LOG_NS} -----------------iceconnectionstatechange---------------`
     );
   };
   /* This one below should not be fired, cause the PC is used just to send */
   //@ts-ignore
-  peerContx.pcPub.ontrack = (event) => Logger(peerContx.pcPub.ontrack);
+  peerContx.pcPub.ontrack = (event) => {
+    Logger(peerContx.pcPub.ontrack);
+    Logger(event);
+  };
 
   try {
     const localStream = await mediaDevices.getUserMedia({
@@ -99,6 +95,7 @@ export async function doOffer(handlePub: any, peerContx: any) {
 
     store.dispatch(setPubLocalStream(localStream));
   } catch (e) {
+    Logger(e);
     Logger(`${LOG_NS}error while doing offer`);
     return;
   }
@@ -111,6 +108,7 @@ export async function doOffer(handlePub: any, peerContx: any) {
     Logger(`${LOG_NS}set local sdp OK`);
     return offer;
   } catch (e) {
+    Logger(e);
     Logger(`${LOG_NS}error while doing offer`);
     return;
   }
@@ -122,8 +120,8 @@ export function eventTrickle(handle: any, pc: any) {
   //@ts-ignore
   handle.on(JANUSMQTT.EVENT.HANDLE_TRICKLE, (evtdata) => {
     if (
-      pc.signalingstatechange == 'have-local-offer' ||
-      pc.signalingstatechange == 'stable'
+      pc.signalingstatechange === 'have-local-offer' ||
+      pc.signalingstatechange === 'stable'
     ) {
       const completed = evtdata.complete;
       if (completed) {
@@ -182,8 +180,8 @@ export async function doOfferAnswer(
   });
 
   //@ts-ignore
-  peerContx.pcSub.onnegotiationneeded = (event) =>
-    Logger(peerContx.pcSub.onnegotiationneeded);
+  peerContx.pcSub.onnegotiationneeded = (event) => Logger(event);
+  Logger(peerContx.pcSub.onnegotiationneeded);
 
   //@ts-ignore
   peerContx.pcSub.onicecandidate = (event) => {
@@ -247,14 +245,14 @@ export async function doOfferAnswer(
 
     /* avoid latching tracks */
     //@ts-ignore
-    const submid = event.transceiver?.mid || event.receiver.mid;
-    const remoteStream =
-      event.streams[0].id === 'janus'
-        ? new MediaStream([event.track])
-        : event.streams[0];
-    const track_kind = event.track.kind;
+    //const submid = event.transceiver?.mid || event.receiver.mid;
+    //const remoteStream =
+    //  event.streams[0].id === 'janus'
+    //    ? new MediaStream([event.track])
+    //    : event.streams[0];
+    //const track_kind = event.track.kind;
 
-    if (event.track.kind == 'video') {
+    if (event.track.kind === 'video') {
       const strm = new MediaStream([event.track]);
 
       store.dispatch(
@@ -272,7 +270,7 @@ export async function doOfferAnswer(
         room: undefined,
       });
       Logger(
-        `${LOG_NS} -------------------------(event.track.kind == video)----------------------------------`
+        `${LOG_NS} -------------------------(event.track.kind === video)----------------------------------`
       );
     }
     Logger(`${LOG_NS} -----------------peerContx.pcSub.ontrack'`);
@@ -334,7 +332,9 @@ export function closePcPub(peerContx: any) {
   try {
     peerContx.pcPub.close();
     peerContx.pcPub = null;
-  } catch (_e) {}
+  } catch (_e) {
+    Logger(_e);
+  }
 }
 
 export function closePcSub(peerContx: any) {
@@ -356,7 +356,9 @@ export function closePcSub(peerContx: any) {
   try {
     peerContx.pcSub.close();
     peerContx.pcSub = null;
-  } catch (_e) {}
+  } catch (_e) {
+    Logger(_e);
+  }
 }
 
 //May be used by publisher handle
@@ -370,6 +372,7 @@ export async function saveReceivedJsepAnswer(peerContx: any, r_jsep: any) {
     await peerContx.pcPub.setRemoteDescription(receivedAnswerDescription);
     Logger(`${LOG_NS}  Saved answer jsep `);
   } catch (err) {
+    Logger(err);
     Logger(
       `${LOG_NS} ---------------------------------answer---jse----error-----------------------`
     );

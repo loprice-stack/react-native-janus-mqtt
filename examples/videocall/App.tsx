@@ -10,7 +10,7 @@ import {
   RTCView,
   //@ts-ignore
 } from 'react-native-webrtc-web-shim';
-import { Connection } from "react-native-janus-mqtt";
+import { Connection } from 'react-native-janus-mqtt';
 import { Logger } from './node_modules/react-native-janus-mqtt/src/utils';
 import type Session from './node_modules/react-native-janus-mqtt/src/session';
 import VideocallHandle from './node_modules/react-native-janus-mqtt/src/plugins/videocall-plugin';
@@ -58,6 +58,8 @@ export default function App() {
         connection.setJanusMessageListerner2('status');
         Logger(`${LOG_NS}  connected successfully`);
       },
+      //@ts-ignore
+      logs: true,
     });
   }
 

@@ -980,7 +980,13 @@ class VideoRoomHandle extends Handle {
        * JANUS_VIDEOROOM_ERROR_INVALID_SDP        437
        *
        */
-      if (jsep && e._code && e._code >= 429 && e._code <= 437 && e._code != 434)
+      if (
+        jsep &&
+        e._code &&
+        e._code >= 429 &&
+        e._code <= 437 &&
+        e._code !== 434
+      )
         this.hangup().catch(() => {});
       throw e;
     });
@@ -1089,7 +1095,13 @@ class VideoRoomHandle extends Handle {
        * JANUS_VIDEOROOM_ERROR_INVALID_SDP        437
        *
        */
-      if (jsep && e._code && e._code >= 429 && e._code <= 437 && e._code != 434)
+      if (
+        jsep &&
+        e._code &&
+        e._code >= 429 &&
+        e._code <= 437 &&
+        e._code !== 434
+      )
         this.hangup().catch(() => {});
       throw e;
     });
@@ -1174,7 +1186,13 @@ class VideoRoomHandle extends Handle {
        * JANUS_VIDEOROOM_ERROR_INVALID_SDP        437
        *
        */
-      if (jsep && e._code && e._code >= 429 && e._code <= 437 && e._code != 434)
+      if (
+        jsep &&
+        e._code &&
+        e._code >= 429 &&
+        e._code <= 437 &&
+        e._code !== 434
+      )
         this.hangup().catch(() => {});
       throw e;
     });

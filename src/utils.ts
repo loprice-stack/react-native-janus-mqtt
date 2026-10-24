@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * An utility module containing helper methods.
  */
@@ -37,9 +35,6 @@ export const getNumericID = (() => {
 
 export let isDebug: boolean = false;
 
-export const setIsDebug = (debug: boolean) => {
-  isDebug == debug;
-};
 export const Logger = (message: any) => {
   if (isDebug) {
     console.log(message);
