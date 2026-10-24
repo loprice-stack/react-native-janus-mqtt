@@ -35,6 +35,13 @@ export const getNumericID = (() => {
   };
 })();
 
+export let isDebug: boolean = false;
+
+export const setIsDebug = (debug: boolean) => {
+  isDebug == debug;
+};
 export const Logger = (message: any) => {
-  console.log(message);
+  if (isDebug) {
+    console.log(message);
+  }
 };

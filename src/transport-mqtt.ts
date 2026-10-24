@@ -15,6 +15,7 @@ export type MqttOptions = {
   reconnect: boolean;
   willMessageOptions: willOptions;
   onSuccess: any;
+  logs: boolean;
 };
 
 export type willOptions = {
@@ -40,6 +41,7 @@ class Mqtt {
     reconnect: true,
     willMessageOptions: { topic: '', qos: 0, retain: false, message: '' },
     onSuccess: undefined,
+    logs: true,
   };
 
   constructor({

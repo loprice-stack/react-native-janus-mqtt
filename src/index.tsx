@@ -1,3 +1,4 @@
 import Mqtt from './transport-mqtt';
 import Connection from './connection';
-export { Mqtt, Connection };
+import { JANUSMQTT } from './protocol';
+export { Mqtt, Connection, JANUSMQTT };

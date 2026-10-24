@@ -19,9 +19,9 @@ A brief usage for the janus implementation. Check on example app for more
 
 ```ts
 import { Connection } from 'react-native-janus-mqtt';
-import videocallPlugin from '../../src/plugins/videocall-plugin';
-import { Logger } from '../../src/utils';
-import type Session from '../../src/session';
+import { Logger } from './node_modules/react-native-janus-mqtt/src/utils';
+import type Session from './node_modules/react-native-janus-mqtt/src/session';
+import VideocallHandle from './node_modules/react-native-janus-mqtt/src/plugins/videocall-plugin';
 const LOG_NS = '[App.ts]';
 
 
@@ -33,10 +33,10 @@ let handle: any
   function janusMqttConect() {
     //Create connection
     connection = new Connection({
-      serverUrl: 'tuchati.loprice.co.tz',
+      serverUrl: 'example.co.tz',
       port: 5281,
       clientId: undefined, //set undefine to generate clientId automatically
-      userName: 'test@tuchati.loprice.co.tz',
+      userName: 'test@example.co.tz',
       password: 'test',
       tojanus: 'to-janus',//send message to janus server topic
       fromjanus: 'from-janus',//receive message from janus server topic
@@ -55,6 +55,7 @@ let handle: any
         //connection.setJanusMessageListerner2('janus-other-topics/channels'); //subscribe to other channels/topics from janus
         Logger(`${LOG_NS}  connected successfully`);
       },
+      logs: true
     });
   }
 
@@ -77,7 +78,7 @@ Usage for mqtt client
 
 ```ts
 import { Mqtt } from 'react-native-janus-mqtt';
-import { Logger } from '../../src/utils';
+import { Logger } from './node_modules/react-native-janus-mqtt/src/utils';
 const LOG_NS = '[App.ts]';
 
 let client: any

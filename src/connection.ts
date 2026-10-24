@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { getNumericID, Logger } from './utils';
+import { getNumericID, Logger, setIsDebug } from './utils';
 import Mqtt, { type MqttOptions } from './transport-mqtt';
 import TransactionManager from './transaction-manager';
 import { isErrorData, isResponseData, JANUS, JANUSMQTT } from './protocol';
@@ -56,6 +56,7 @@ class Connection extends EventEmitter {
           message: options.willMessageOptions.message,
         },
         onSuccess: options.onSuccess,
+        logs: options.logs,
       });
       //transport.onSuccess()
       transport.onConnectionLost((error: any) => {
@@ -67,6 +68,7 @@ class Connection extends EventEmitter {
 
         this._handleMessage(JSON.parse(message.payloadString));
       });
+      setIsDebug(options.logs);
       transport.connect();
       if (transport) this._transport = transport;
       this.options = options;
