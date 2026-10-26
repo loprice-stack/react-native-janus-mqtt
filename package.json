@@ -22,20 +22,20 @@
     "!**/.*"
   ],
   "scripts": {
-    "example": "yarn workspace react-native-janus-mqtt-example",
     "clean": "del-cli lib",
     "prepare": "bob build",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "test": "jest",
-    "release": "release-it --only-version",
-    "web": "vite",
-    "build:web": "vite build"
+    "release": "release-it --only-version"
   },
   "keywords": [
     "react-native",
     "ios",
-    "android"
+    "android",
+    "janus",
+    "mqtt",
+    "janus-mqtt"
   ],
   "repository": {
     "type": "git",
