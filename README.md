@@ -2,7 +2,7 @@
 
 This library enables you to connect to [Janus Webrtc Server](https://janus.conf.meetecho.com/) through janus.transport.mqtt plugin. Under the hood it uses  [Paho](https://github.com/eclipse-paho/paho.mqtt.javascript) as a transport. The library has also implement at least neccessary functions of Paho (Paho.Client(options) ) transporrt client which can be used via Mqtt (Mqtt(options) client). 
 
-#### Plugins implementations
+## Plugins
 + videocall-plugin
 + videoroom-plugin
 
